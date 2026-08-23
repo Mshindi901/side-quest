@@ -1,0 +1,1 @@
+/usr/lib/postgresql/18/bin/postgres "-D" "/home/mshindi/Desktop/Poultry-report-app/Backend/.pgdata" "-k" "/home/mshindi/Desktop/Poultry-report-app/Backend/.pgdata" "-p" "5433"

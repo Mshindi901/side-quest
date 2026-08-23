@@ -1,0 +1,14 @@
+2026-08-22 20:23:31.628 EAT [28] LOG:  starting PostgreSQL 18.4 (Debian 18.4-1+b2) on x86_64-pc-linux-gnu, compiled by x86_64-linux-gnu-gcc (Debian 15.3.0-2) 15.3.0, 64-bit
+2026-08-22 20:23:31.633 EAT [28] LOG:  could not bind IPv6 address "::1": Address already in use
+2026-08-22 20:23:31.633 EAT [28] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2026-08-22 20:23:31.634 EAT [28] LOG:  could not bind IPv4 address "127.0.0.1": Address already in use
+2026-08-22 20:23:31.634 EAT [28] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2026-08-22 20:23:31.634 EAT [28] WARNING:  could not create listen socket for "localhost"
+2026-08-22 20:23:31.635 EAT [28] FATAL:  could not create any TCP/IP sockets
+2026-08-22 20:23:31.640 EAT [28] LOG:  database system is shut down
+2026-08-22 20:23:45.507 EAT [26] LOG:  starting PostgreSQL 18.4 (Debian 18.4-1+b2) on x86_64-pc-linux-gnu, compiled by x86_64-linux-gnu-gcc (Debian 15.3.0-2) 15.3.0, 64-bit
+2026-08-22 20:23:45.510 EAT [26] LOG:  listening on IPv6 address "::1", port 5433
+2026-08-22 20:23:45.512 EAT [26] LOG:  listening on IPv4 address "127.0.0.1", port 5433
+2026-08-22 20:23:45.520 EAT [26] LOG:  listening on Unix socket "/home/mshindi/Desktop/Poultry-report-app/Backend/.pgdata/.s.PGSQL.5433"
+2026-08-22 20:23:45.545 EAT [32] LOG:  database system was shut down at 2026-08-22 20:23:25 EAT
+2026-08-22 20:23:45.564 EAT [26] LOG:  database system is ready to accept connections
