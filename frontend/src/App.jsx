@@ -694,7 +694,7 @@ export default function App() {
                     onChange={(e) => setExpenseSearch(e.target.value)}
                   />
                 </div>
-                <div className="filter-group">
+                <div className="filter-group expense-filters">
                   <select
                     className="select-input"
                     aria-label="Filter expenses by batch"

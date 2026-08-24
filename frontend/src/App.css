@@ -502,6 +502,27 @@
   color: var(--text-main);
 }
 
+.expense-filters {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.expense-filters .select-input {
+  min-width: 150px;
+}
+
+@media (max-width: 640px) {
+  .expense-filters {
+    width: 100%;
+  }
+
+  .expense-filters .select-input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 /* Data Table */
 .table-container {
   overflow-x: auto;
