@@ -32,6 +32,8 @@ export default function App() {
   const [inventory, setInventory] = useState([]);
   const [batches, setBatches] = useState([]);
   const [report, setReport] = useState(null);
+  const [reportBatchId, setReportBatchId] = useState('');
+  const [summaryBatchId, setSummaryBatchId] = useState('');
   const [loading, setLoading] = useState(false);
   const [backendStatus, setBackendStatus] = useState('checking'); // 'connected' | 'error' | 'checking'
   
@@ -159,8 +161,10 @@ export default function App() {
   };
 
   // Calculate KPIs
-  const totalRevenue = revenue.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-  const totalExpenses = expenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const summaryRevenue = summaryBatchId ? revenue.filter((item) => item.batchId === summaryBatchId) : revenue;
+  const summaryExpenses = summaryBatchId ? expenses.filter((item) => item.batchId === summaryBatchId) : expenses;
+  const totalRevenue = summaryRevenue.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const totalExpenses = summaryExpenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
   const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
   const totalInventoryValuation = inventory.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -266,9 +270,10 @@ export default function App() {
     }
   };
 
-  const loadReport = async () => {
+  const loadReport = async (batchId = reportBatchId) => {
     try {
-      const res = await api.get('/api/reports');
+      const params = batchId ? { batchId } : {};
+      const res = await api.get('/api/reports', { params });
       if (res.data?.success) setReport(res.data.data);
     } catch (err) {
       showToast(err.response?.data?.message || 'Error loading report', 'error');
@@ -411,7 +416,7 @@ export default function App() {
           <button className={`nav-item ${activeTab === 'batches' ? 'active' : ''}`} onClick={() => { setActiveTab('batches'); setSidebarOpen(false); }}>
             <Layers size={18} /><span>Batches</span><span className="nav-badge">{batches.length}</span>
           </button>
-          <button className={`nav-item ${activeTab === 'report' ? 'active' : ''}`} onClick={() => { setActiveTab('report'); setSidebarOpen(false); loadReport(); }}>
+          <button className={`nav-item ${activeTab === 'report' ? 'active' : ''}`} onClick={() => { const batchId = reportBatchId || batches[0]?.id || ''; setReportBatchId(batchId); setActiveTab('report'); setSidebarOpen(false); loadReport(batchId); }}>
             <FileText size={18} /><span>Reports</span>
           </button>
 
@@ -466,11 +471,15 @@ export default function App() {
               <p className="page-subtitle">Real-time farm finances, sales reports, and inventory management</p>
             </div>
           </div>
+            <select className="select-input" aria-label="Filter summary by batch" value={summaryBatchId} onChange={(e) => setSummaryBatchId(e.target.value)}>
+              <option value="">All batches</option>
+              {batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+            </select>
             <button className="btn btn-secondary" onClick={fetchAllData} disabled={loading}>
               <RefreshCw size={16} className={loading ? 'spin' : ''} />
               <span>Refresh</span>
             </button>
-            {activeTab === 'report' && <button className="btn btn-primary" onClick={() => window.open('/api/reports/pdf', '_blank')}><FileText size={16} /><span>Download PDF</span></button>}
+            {activeTab === 'report' && <button className="btn btn-primary" onClick={() => window.open(reportBatchId ? `/api/reports/pdf?batchId=${encodeURIComponent(reportBatchId)}` : '/api/reports/pdf', '_blank')}><FileText size={16} /><span>Download PDF</span></button>}
         </header>
 
         <div className="content-container">
@@ -483,7 +492,7 @@ export default function App() {
               <div className="kpi-info">
                 <span className="kpi-label">Total Revenue</span>
                 <h3 className="kpi-value">{formatCurrency(totalRevenue)}</h3>
-                <span className="kpi-subtext">{revenue.length} recorded entries</span>
+                <span className="kpi-subtext">{summaryRevenue.length} recorded entries</span>
               </div>
             </div>
 
@@ -494,7 +503,7 @@ export default function App() {
               <div className="kpi-info">
                 <span className="kpi-label">Total Expenses</span>
                 <h3 className="kpi-value">{formatCurrency(totalExpenses)}</h3>
-                <span className="kpi-subtext">{expenses.length} recorded entries</span>
+                <span className="kpi-subtext">{summaryExpenses.length} recorded entries</span>
               </div>
             </div>
 
@@ -633,7 +642,7 @@ export default function App() {
 
           {activeTab === 'report' && (
             <section className="section-card">
-              <div className="section-header"><div className="section-title-wrap"><div className="section-icon revenue-theme"><FileText size={20} /></div><div><h2 className="section-heading">Financial Report</h2><p className="section-subtext">All revenue, expenses, and net profit</p></div></div><button className="btn btn-primary" onClick={() => window.open('/api/reports/pdf', '_blank')}><FileText size={16} /><span>Download PDF</span></button></div>
+              <div className="section-header"><div className="section-title-wrap"><div className="section-icon revenue-theme"><FileText size={20} /></div><div><h2 className="section-heading">Financial Report</h2><p className="section-subtext">Revenue, expenses, and net profit for the selected batch</p></div></div><div className="section-actions"><select className="select-input" aria-label="Select report batch" value={reportBatchId} onChange={(e) => { setReportBatchId(e.target.value); loadReport(e.target.value); }}><option value="">Select a batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select><button className="btn btn-primary" onClick={() => window.open(reportBatchId ? `/api/reports/pdf?batchId=${encodeURIComponent(reportBatchId)}` : '/api/reports/pdf', '_blank')}><FileText size={16} /><span>Download PDF</span></button></div></div>
               <div className="kpi-grid report-summary">
                 <div className="kpi-card kpi-revenue"><div className="kpi-info"><span className="kpi-label">Total Revenue</span><h3 className="kpi-value">{formatCurrency(report?.totalRevenue)}</h3></div></div>
                 <div className="kpi-card kpi-expenses"><div className="kpi-info"><span className="kpi-label">Total Expenses</span><h3 className="kpi-value">{formatCurrency(report?.totalExpenses)}</h3></div></div>
