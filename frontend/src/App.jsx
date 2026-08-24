@@ -377,8 +377,7 @@ export default function App() {
               </svg>
             </div>
             <div className="brand-text">
-              <h2>Dad Farm Records</h2>
-              <span>Poultry Management</span>
+              <h2>Farm Management</h2>
             </div>
           </div>
           <button className="sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close sidebar">
