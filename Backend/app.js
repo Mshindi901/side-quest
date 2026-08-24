@@ -51,8 +51,14 @@ app.use((req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    connectDB();
-    console.log(`Server is up and running on port ${PORT}`);
+const startServer = async() => {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`Server is up and running on port ${PORT}`);
+    });
+};
+
+startServer().catch(() => {
+    process.exitCode = 1;
 });
 

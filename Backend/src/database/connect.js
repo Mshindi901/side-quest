@@ -3,6 +3,7 @@ import Batch from "../models/batch.js";
 import Expenses from "../models/expenses.js";
 import Revenue from "../models/revenue.js";
 import Report from "../models/report.js";
+import "../models/inventory.js";
 import { randomUUID } from "node:crypto";
 
 Batch.hasMany(Expenses, { foreignKey: 'batchId', onDelete: 'CASCADE' });
@@ -16,6 +17,8 @@ const connectDB = async() => {
     try {
         await sequelize.authenticate();
         console.log('Connection has been established');
+
+        await sequelize.sync();
 
         // Backfill records created before batch ownership was introduced.
         await Batch.sync({ alter: true });
@@ -49,7 +52,7 @@ const connectDB = async() => {
         console.log('Models synchronized successfully')
     } catch (error) {
         console.error(`Failed to connect to Database ${error}`);
-        return;
+        throw error;
     }
 };
 
