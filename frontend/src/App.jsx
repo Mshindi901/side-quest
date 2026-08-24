@@ -46,6 +46,8 @@ export default function App() {
   const [revenueSearch, setRevenueSearch] = useState('');
   const [expenseSearch, setExpenseSearch] = useState('');
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('');
+  const [revenueBatchFilter, setRevenueBatchFilter] = useState('');
+  const [expenseBatchFilter, setExpenseBatchFilter] = useState('');
   const [inventorySearch, setInventorySearch] = useState('');
 
   // Modal State
@@ -339,14 +341,15 @@ export default function App() {
   const filteredRevenue = revenue.filter((item) =>
     (item.name || '').toLowerCase().includes(revenueSearch.toLowerCase()) ||
     getBatchName(item).toLowerCase().includes(revenueSearch.toLowerCase())
-  );
+  ).filter((item) => !revenueBatchFilter || item.batchId === revenueBatchFilter);
 
   const filteredExpenses = expenses.filter((item) => {
     const searchTerm = expenseSearch.toLowerCase();
     const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm) ||
       getBatchName(item).toLowerCase().includes(searchTerm);
     const matchesCategory = expenseCategoryFilter ? (item.type || '').toLowerCase() === expenseCategoryFilter.toLowerCase() : true;
-    return matchesSearch && matchesCategory;
+    const matchesBatch = expenseBatchFilter ? item.batchId === expenseBatchFilter : true;
+    return matchesSearch && matchesCategory && matchesBatch;
   });
 
   const filteredInventory = inventory.filter((item) =>
@@ -569,6 +572,10 @@ export default function App() {
                     onChange={(e) => setRevenueSearch(e.target.value)}
                   />
                 </div>
+                <select className="select-input" aria-label="Filter revenue by batch" value={revenueBatchFilter} onChange={(e) => setRevenueBatchFilter(e.target.value)}>
+                  <option value="">All Batches</option>
+                  {batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+                </select>
               </div>
 
               <div className="table-container">
@@ -688,6 +695,15 @@ export default function App() {
                   />
                 </div>
                 <div className="filter-group">
+                  <select
+                    className="select-input"
+                    aria-label="Filter expenses by batch"
+                    value={expenseBatchFilter}
+                    onChange={(e) => setExpenseBatchFilter(e.target.value)}
+                  >
+                    <option value="">All Batches</option>
+                    {batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+                  </select>
                   <select
                     className="select-input"
                     value={expenseCategoryFilter}
