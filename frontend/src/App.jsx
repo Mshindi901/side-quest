@@ -329,15 +329,17 @@ export default function App() {
   };
 
   // Filtered lists
+  const getBatchName = (item) => item.Batch?.name || batches.find((batch) => batch.id === item.batchId)?.name || 'Unknown batch';
+
   const filteredRevenue = revenue.filter((item) =>
     (item.name || '').toLowerCase().includes(revenueSearch.toLowerCase()) ||
-    (item.Batch?.name || '').toLowerCase().includes(revenueSearch.toLowerCase())
+    getBatchName(item).toLowerCase().includes(revenueSearch.toLowerCase())
   );
 
   const filteredExpenses = expenses.filter((item) => {
     const searchTerm = expenseSearch.toLowerCase();
     const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm) ||
-      (item.Batch?.name || '').toLowerCase().includes(searchTerm);
+      getBatchName(item).toLowerCase().includes(searchTerm);
     const matchesCategory = expenseCategoryFilter ? (item.type || '').toLowerCase() === expenseCategoryFilter.toLowerCase() : true;
     return matchesSearch && matchesCategory;
   });
@@ -348,7 +350,7 @@ export default function App() {
 
   const reportGroups = Object.values([...(report?.revenues || []).map((item) => ({ ...item, entryType: 'Revenue' })), ...(report?.expenses || []).map((item) => ({ ...item, entryType: 'Expense' }))].reduce((groups, item) => {
     const batchKey = item.Batch?.id || item.batchId || 'unknown';
-    if (!groups[batchKey]) groups[batchKey] = { id: batchKey, name: item.Batch?.name || 'Unknown batch', items: [] };
+    if (!groups[batchKey]) groups[batchKey] = { id: batchKey, name: getBatchName(item), items: [] };
     groups[batchKey].items.push(item);
     return groups;
   }, {}));
@@ -580,7 +582,7 @@ export default function App() {
                       filteredRevenue.map((item) => (
                         <tr key={item.id}>
                           <td><div className="item-title">{item.name}</div></td>
-                          <td>{item.Batch?.name || 'Unknown batch'}</td>
+                          <td>{getBatchName(item)}</td>
                           <td><span className="item-amount amount-positive">+{formatCurrency(item.amount)}</span></td>
                           <td><span className="item-date">{formatDate(item.createdAt)}</span></td>
                           <td style={{ textAlign: 'right' }}>
@@ -712,7 +714,7 @@ export default function App() {
                       filteredExpenses.map((item) => (
                         <tr key={item.id}>
                           <td><div className="item-title">{item.name}</div></td>
-                          <td>{item.Batch?.name || 'Unknown batch'}</td>
+                          <td>{getBatchName(item)}</td>
                           <td><span className={`category-tag tag-${item.type}`}>{item.type || 'Feeds'}</span></td>
                           <td><span className="item-amount amount-negative">-{formatCurrency(item.amount)}</span></td>
                           <td><span className="item-date">{formatDate(item.createdAt)}</span></td>
