@@ -1,5 +1,6 @@
 import Expenses from "../models/expenses.js";
 import Batch from "../models/batch.js";
+import { Op } from "sequelize";
 
 export const newExpense = async(req, res) => {
     try {
@@ -23,7 +24,15 @@ export const newExpense = async(req, res) => {
 
 export const getAllExpenses = async(req, res) => {
     try {
-        const allExpenses = await Expenses.findAll();
+        const { batchName } = req.query;
+        const allExpenses = await Expenses.findAll({
+            include: [{
+                model: Batch,
+                attributes: ['id', 'name'],
+                ...(batchName ? { where: { name: { [Op.iLike]: `%${batchName}%` } } } : {})
+            }],
+            order: [['createdAt', 'DESC']]
+        });
         if(!allExpenses){
             return res.status(404).json({success: false, message: 'No Expenses yet or Failed to fetch'});
         };

@@ -1,5 +1,6 @@
 import Revenue from "../models/revenue.js";
 import Batch from "../models/batch.js";
+import { Op } from "sequelize";
 
 export const newRevenue = async(req, res) => {
     try {
@@ -22,7 +23,15 @@ export const newRevenue = async(req, res) => {
 
 export const getAllRevenues = async(req, res) => {
     try {
-        const allRevenues = await Revenue.findAll();
+        const { batchName } = req.query;
+        const allRevenues = await Revenue.findAll({
+            include: [{
+                model: Batch,
+                attributes: ['id', 'name'],
+                ...(batchName ? { where: { name: { [Op.iLike]: `%${batchName}%` } } } : {})
+            }],
+            order: [['createdAt', 'DESC']]
+        });
         if (!allRevenues) {
             return res.status(404).json({ success: false, message: 'No Revenues yet or Failed to fetch' });
         }

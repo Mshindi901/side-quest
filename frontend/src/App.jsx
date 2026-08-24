@@ -330,11 +330,14 @@ export default function App() {
 
   // Filtered lists
   const filteredRevenue = revenue.filter((item) =>
-    (item.name || '').toLowerCase().includes(revenueSearch.toLowerCase())
+    (item.name || '').toLowerCase().includes(revenueSearch.toLowerCase()) ||
+    (item.Batch?.name || '').toLowerCase().includes(revenueSearch.toLowerCase())
   );
 
   const filteredExpenses = expenses.filter((item) => {
-    const matchesSearch = (item.name || '').toLowerCase().includes(expenseSearch.toLowerCase());
+    const searchTerm = expenseSearch.toLowerCase();
+    const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm) ||
+      (item.Batch?.name || '').toLowerCase().includes(searchTerm);
     const matchesCategory = expenseCategoryFilter ? (item.type || '').toLowerCase() === expenseCategoryFilter.toLowerCase() : true;
     return matchesSearch && matchesCategory;
   });
@@ -342,6 +345,13 @@ export default function App() {
   const filteredInventory = inventory.filter((item) =>
     (item.name || '').toLowerCase().includes(inventorySearch.toLowerCase())
   );
+
+  const reportGroups = Object.values([...(report?.revenues || []).map((item) => ({ ...item, entryType: 'Revenue' })), ...(report?.expenses || []).map((item) => ({ ...item, entryType: 'Expense' }))].reduce((groups, item) => {
+    const batchKey = item.Batch?.id || item.batchId || 'unknown';
+    if (!groups[batchKey]) groups[batchKey] = { id: batchKey, name: item.Batch?.name || 'Unknown batch', items: [] };
+    groups[batchKey].items.push(item);
+    return groups;
+  }, {}));
 
   return (
     <div className="app-layout">
@@ -543,7 +553,7 @@ export default function App() {
                   <Search size={17} />
                   <input
                     type="text"
-                    placeholder="Search revenue by description..."
+                    placeholder="Search revenue or batch name..."
                     value={revenueSearch}
                     onChange={(e) => setRevenueSearch(e.target.value)}
                   />
@@ -555,6 +565,7 @@ export default function App() {
                   <thead>
                     <tr>
                       <th>Source / Description</th>
+                      <th>Batch</th>
                       <th>Amount</th>
                       <th>Date Added</th>
                       <th style={{ textAlign: 'right' }}>Actions</th>
@@ -563,12 +574,13 @@ export default function App() {
                   <tbody>
                     {filteredRevenue.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="table-empty">No revenue records found.</td>
+                        <td colSpan={5} className="table-empty">No revenue records found.</td>
                       </tr>
                     ) : (
                       filteredRevenue.map((item) => (
                         <tr key={item.id}>
                           <td><div className="item-title">{item.name}</div></td>
+                          <td>{item.Batch?.name || 'Unknown batch'}</td>
                           <td><span className="item-amount amount-positive">+{formatCurrency(item.amount)}</span></td>
                           <td><span className="item-date">{formatDate(item.createdAt)}</span></td>
                           <td style={{ textAlign: 'right' }}>
@@ -625,7 +637,7 @@ export default function App() {
                 <div className="kpi-card kpi-expenses"><div className="kpi-info"><span className="kpi-label">Total Expenses</span><h3 className="kpi-value">{formatCurrency(report?.totalExpenses)}</h3></div></div>
                 <div className="kpi-card kpi-profit"><div className="kpi-info"><span className="kpi-label">Net Profit</span><h3 className="kpi-value">{formatCurrency(report?.netProfit)}</h3></div></div>
               </div>
-              <div className="table-container"><table className="data-table"><thead><tr><th>Type</th><th>Description</th><th>Batch</th><th>Amount</th></tr></thead><tbody>{[...(report?.revenues || []).map((item) => ({ ...item, entryType: 'Revenue' })), ...(report?.expenses || []).map((item) => ({ ...item, entryType: 'Expense' }))].map((item) => <tr key={`${item.entryType}-${item.id}`}><td>{item.entryType}</td><td>{item.name}</td><td>{item.Batch?.name || 'Unknown batch'}</td><td className={item.entryType === 'Revenue' ? 'amount-positive' : 'amount-negative'}>{formatCurrency(item.amount)}</td></tr>)}</tbody></table></div>
+              {reportGroups.map((group) => <div className="table-container" key={group.id}><h3 className="section-heading">{group.name}</h3><table className="data-table"><thead><tr><th>Type</th><th>Description</th><th>Amount</th></tr></thead><tbody>{group.items.map((item) => <tr key={`${item.entryType}-${item.id}`}><td>{item.entryType}</td><td>{item.name}</td><td className={item.entryType === 'Revenue' ? 'amount-positive' : 'amount-negative'}>{formatCurrency(item.amount)}</td></tr>)}</tbody></table></div>)}
             </section>
           )}
 
@@ -684,6 +696,7 @@ export default function App() {
                   <thead>
                     <tr>
                       <th>Expense Name</th>
+                      <th>Batch</th>
                       <th>Category</th>
                       <th>Amount</th>
                       <th>Date Added</th>
@@ -693,12 +706,13 @@ export default function App() {
                   <tbody>
                     {filteredExpenses.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="table-empty">No expense records found.</td>
+                        <td colSpan={6} className="table-empty">No expense records found.</td>
                       </tr>
                     ) : (
                       filteredExpenses.map((item) => (
                         <tr key={item.id}>
                           <td><div className="item-title">{item.name}</div></td>
+                          <td>{item.Batch?.name || 'Unknown batch'}</td>
                           <td><span className={`category-tag tag-${item.type}`}>{item.type || 'Feeds'}</span></td>
                           <td><span className="item-amount amount-negative">-{formatCurrency(item.amount)}</span></td>
                           <td><span className="item-date">{formatDate(item.createdAt)}</span></td>
