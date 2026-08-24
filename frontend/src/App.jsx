@@ -356,6 +356,9 @@ export default function App() {
     (item.name || '').toLowerCase().includes(inventorySearch.toLowerCase())
   );
 
+  const filteredRevenueTotal = filteredRevenue.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const filteredExpensesTotal = filteredExpenses.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
   const reportGroups = Object.values([...(report?.revenues || []).map((item) => ({ ...item, entryType: 'Revenue' })), ...(report?.expenses || []).map((item) => ({ ...item, entryType: 'Expense' }))].reduce((groups, item) => {
     const batchKey = item.Batch?.id || item.batchId || 'unknown';
     if (!groups[batchKey]) groups[batchKey] = { id: batchKey, name: getBatchName(item), items: [] };
@@ -551,7 +554,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="section-actions">
-                  <div className="section-badge revenue-badge">{formatCurrency(totalRevenue)} Total</div>
+                  <div className="section-badge revenue-badge">{formatCurrency(filteredRevenueTotal)} Total</div>
                   <button
                     className="btn btn-primary"
                     onClick={() => setRevenueModal({ isOpen: true, isEdit: false, id: '', name: '', amount: '', batchId: batches[0]?.id || '' })}
@@ -673,7 +676,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="section-actions">
-                  <div className="section-badge expense-badge">{formatCurrency(totalExpenses)} Total</div>
+                  <div className="section-badge expense-badge">{formatCurrency(filteredExpensesTotal)} Total</div>
                   <button
                     className="btn btn-primary"
                     onClick={() => setExpenseModal({ isOpen: true, isEdit: false, id: '', name: '', amount: '', type: 'Feeds', batchId: batches[0]?.id || '' })}
